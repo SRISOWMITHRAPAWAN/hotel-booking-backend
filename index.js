@@ -6,7 +6,7 @@ import usersRoute from "./routes/Users.js"
 import hotelsRoute from "./routes/Hotels.js"
 import roomsRoute from "./routes/Rooms.js"
 import cookieParser from "cookie-parser"
-import cors from "cors"
+import cors from "cors";
 const app=express()
 dotenv.config()
 
