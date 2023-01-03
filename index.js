@@ -7,8 +7,23 @@ import hotelsRoute from "./routes/Hotels.js"
 import roomsRoute from "./routes/Rooms.js"
 import cookieParser from "cookie-parser"
 import cors from "cors";
-const app=express()
+import bodyParser from "body-parser"
+
 dotenv.config()
+
+const KEY=process.env.SECRET_KEY
+import Stripe from "stripe"
+
+
+const stripe = new Stripe(KEY, {
+    apiVersion: '2020-08-27',
+  });
+
+
+
+
+const app=express()
+
 
 
 const connect =async()=>{
@@ -34,6 +49,9 @@ app.use(cors({
 }
 ));
 app.use(cookieParser())
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}))
+
 
 app.use(express.json())
 
@@ -41,6 +59,26 @@ app.use("/api/auth",authRoute);
 app.use("/api/users",usersRoute);
 app.use("/api/hotels",hotelsRoute);
 app.use("/api/rooms",roomsRoute);
+
+
+app.post("/api/payment",async(req,res)=>{
+    let status,error;
+    const {token,amount}=req.body;
+    
+    try{
+await stripe.charges.create({
+    source: token.id,
+    amount,
+    currency:"usd",
+
+});
+status="success";
+    }catch(error){
+        console.log(error)
+        status="Failure";
+    }
+    res.json({error,status})
+})
 
 app.use((err,req,res,next)=>{
     const errorStatus=err.status || 500
@@ -52,9 +90,6 @@ app.use((err,req,res,next)=>{
         stack:err.stack
     })
  })
-
-
-
 
 app.listen(8000,()=>{
     connect()
